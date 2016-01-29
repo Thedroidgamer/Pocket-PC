@@ -1,1 +1,151 @@
+//NAMETAG AND LEAD MOD BY THEDROIDGAMER//
+//Do not copy or re-upload my code or you will be infracted with copyright//
+//COPYRIGHT DroidMod 2016//
 
+var ctx = com.mojang.minecraftpe.MainActivity.currentMainActivity.get();
+function newLevel(){
+ef = ModPE.readData("efsaved");
+eb = ModPE.readData("ebsaved");
+}
+var entity;
+var entity1;
+var entity2;
+var ef=0;
+var eb=0;
+var fencex;
+var fencey;
+var fencez;
+
+ModPE.setItem(421,"name_tag",0,"Name Tag");
+ModPE.setItem(420,"lead",0,"Lead");
+Item.addShapedRecipe(420,2,0,["gg ","gb ","  g"],["g",287,0,"b",341,0]);
+Player.addItemCreativeInv(421,5,0)
+Player.addItemCreativeInv(420,5,0)
+
+function attackHook(attacker, victim)
+{
+if(getCarriedItem()==421){
+preventDefault();
+ctx.runOnUiThread(new java.lang.Runnable(){
+run: function(){ 
+try{
+GUI = new android.widget.PopupWindow();
+var layout = new android.widget.LinearLayout(ctx);
+var et = new android.widget.EditText(ctx);
+var btn = new android.widget.Button(ctx);
+btn.setText("Finish");
+layout.setOrientation(android.widget.LinearLayout.VERTICAL);
+layout.addView(et);
+layout.addView(btn);
+var dialog = new android.app.Dialog(ctx);
+dialog.setContentView(layout);
+dialog.setTitle("Choose a name?");
+GUI.setHeight(android.widget.LinearLayout.LayoutParams.WRAP_CONTENT);
+GUI.setWidth(android.widget.LinearLayout.LayoutParams.WRAP_CONTENT);
+GUI.showAtLocation(ctx.getWindow().getDecorView(), android.view.Gravity.TOP, 0, 0);
+dialog.show();
+btn.setOnClickListener(new android.view.View.OnClickListener(){
+onClick: function(view){
+var name = et.getText();
+if(Entity.getHealth(victim)==0) {
+dialog.dismiss();
+} else {
+Entity.setNameTag(victim, name);
+clientMessage(ChatColor.RED+"Wow great name!");
+dialog.dismiss();
+}
+}
+});
+} catch (e){
+print ("Error: "+e)
+}
+}});
+}
+if(getCarriedItem()==420&&eb==0){
+preventDefault();
+ef=1;
+eb=1;
+entity1 = victim;}
+else if(victim==entity1&&getCarriedItem()==420&&eb==1){
+preventDefault();
+ef=0;
+eb=0;}}
+
+function modTick(){
+ex =Entity.getX(entity)
+ey =Entity.getY(entity)
+ez =Entity.getZ(entity)
+e1x =Entity.getX(entity1)
+e1y =Entity.getY(entity1)
+e1z =Entity.getZ(entity1)
+e2x =Entity.getX(entity2)
+e2y =Entity.getY(entity2)
+e2z =Entity.getZ(entity2)
+if(eb == 0) return;
+if (ef == 1)
+{
+if (Math.sqrt(Math.pow(Player.getX() - Entity.getX(entity1), 2) +  Math.pow(Player.getZ() - Entity.getZ(entity1), 2)) < 5) return;
+var angle = Math.atan2((Player.getZ() - Entity.getZ(entity1)), (Player.getX() - Entity.getX(entity1)));
+Entity.setVelX(entity1,(Math.cos(angle) * 0.2));
+Entity.setVelZ(entity1,(Math.sin(angle) * 0.2));
+Entity.setRot(entity1, (((angle * 180) / Math.PI) - 90), Entity.getPitch(entity1));
+} 
+if(ef == 1 && getTile(e1x,e1y,e1z+1) || getTile(e1x,e1y,e1z-1) || getTile(e1x+1,ey,e1z+1) || getTile(e1x-1,e1y,e1z) )
+{
+setVelY(entity1,0)
+}
+else if (ef == 21)
+{
+if (Math.sqrt(Math.pow(fencex - Entity.getX(entity1), 2) +  Math.pow(fencez - Entity.getZ(entity1), 2)) < 3) return;
+var angle = Math.atan2((fencez - Entity.getZ(entity1)), (fencex - Entity.getX(entity1)));
+Entity.setVelX(entity1,(Math.cos(angle) * 0.2));
+Entity.setVelZ(entity1,(Math.sin(angle) * 0.2));
+Entity.setRot(entity1, (((angle * 180) / Math.PI) - 90), Entity.getPitch(entity1));
+}
+}
+
+function useItem(x, y, z, itemId, blockId, side){
+if(itemId==420 && blockId==85 && ef==1){
+Level.getTile(x, y, z);
+fencex = Math.floor(x);
+fencey = Math.floor(y);
+fencez = Math.floor(z);
+preventDefault();
+ef=21;
+eb=21;
+addItemInventory(420,-1,0);
+clientMessage("Entity tied to fence");
+}
+else if(Player.getCarriedItem()!=420&&blockId==85&&ef==21){
+preventDefault();
+ef=0;
+eb=0;
+Level.dropItem(x,y,z,0,420,1,0);
+clientMessage("Entity untied but you're dragging it");
+}
+}
+
+function deathHook(murderer, victim){
+if(victim==entity1&&ef==21){
+Level.dropItem(Entity.getX(victim),Entity.getY(victim),Entity.getZ(victim),0,420,1,0);
+}
+if(victim==entity1){
+ef=0;
+eb=0;
+clientMessage("Entity died!");
+}
+}
+
+function destroyBlock(x,y,z,side) {
+if(Level.getGameMode()==0){
+if(getTile(x,y,z)==85&&ef==21){
+ef=0;
+eb=0;
+Level.dropItem(x,y,z,0,420,1,0);
+}}}
+
+
+function leaveLevel(){
+ModPE.saveData("efsaved", ef);
+ModPE.saveData("ebsaved", eb);
+}
